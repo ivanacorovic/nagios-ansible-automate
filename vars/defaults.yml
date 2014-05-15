@@ -1,0 +1,6 @@
+ruby_version: 2.1.0
+rbenv_makeopts: ""
+
+# Papertrail logging
+# e.g. @logs.papertrailapp.com:1234
+papertrail_log_dest: "@logs.papertrailapp.com:46606"

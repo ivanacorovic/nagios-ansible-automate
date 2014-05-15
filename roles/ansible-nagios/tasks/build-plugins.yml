@@ -1,0 +1,40 @@
+- name: download nagios plugins tarball
+  sudo: true
+  get_url: >
+    dest="{{nagios_build_directory}}"
+    url={{nagios_plugin_tarball}}
+
+- name: untar the tarball
+  sudo: true
+  command: "tar -xvf /tmp/nagios-plugins-{{nagios_plugins_version}}.tar.gz -C /tmp/"
+
+- name: configure
+  sudo: true
+  command: "./configure --with-nagios-user=nagios --with-nagios-group=nagios chdir={{nagios_build_directory}}/nagios-plugins-{{nagios_plugins_version}}"
+
+- name: make
+  sudo: true
+  command: "make all chdir={{nagios_build_directory}}/nagios-plugins-{{nagios_plugins_version}}"
+
+- name: make install
+  sudo: true
+  command: "make install chdir={{nagios_build_directory}}/nagios-plugins-{{nagios_plugins_version}}"
+
+- name: copy nagios.configure
+  sudo: true
+  copy: src=/etc/apache2/conf.d/nagios.conf dest=/etc/apache2/sites-available/nagios
+
+- name: link sites-available/nagis to sites-enabled/nagios
+  sudo: true
+  file: src=/etc/apache2/sites-available/nagios dest=/etc/apache2/sites-enabled/nagios state=link
+
+- name: add user www-data to nagcmd group
+  sudo: true
+  user: >
+    groups=nagcmd
+    name=www-data
+
+- name: chmod 
+  sudo: true
+  file: path=/usr/local/nagios/var/rw/ owner=www-data group=nagcmd  recurse=true
+

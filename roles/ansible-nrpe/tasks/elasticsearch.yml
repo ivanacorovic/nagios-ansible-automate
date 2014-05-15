@@ -1,0 +1,13 @@
+- name: download elasticsearch
+  sudo: true
+  get_url: >
+    dest={{nagios_build_directory}}
+    url=https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.1.0.deb
+
+- name: install elasticsearch
+  sudo: true
+  command: "dpkg -i elasticsearch-1.1.0.deb chdir={{nagios_build_directory}}"
+  notify: start elasticsearch
+
+- name: install elasticsearch gem
+  command: gem install elasticsearch

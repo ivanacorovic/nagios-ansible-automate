@@ -1,0 +1,19 @@
+define host{
+  use linux-server
+  host_name server
+  alias server
+  address {{nagios_nrpe_ip}}
+}
+
+define hostgroup{
+  hostgroup_name servers
+  alias Servers
+  members server
+}
+
+define service{
+  use generic-service
+  host_name server
+  service_description Current Users
+  check_command check_remote_users
+}

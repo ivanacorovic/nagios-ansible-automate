@@ -1,0 +1,93 @@
+- name: make nrpe src
+  sudo: true
+  file: path=/usr/local/src/nrpe state=directory
+
+- name: download nagios nrpe tarball
+  sudo: true
+  get_url: >
+    dest={{nrpe_build_directory}}
+    url={{nagios_nrpe_tarball}}
+
+- name: untar the tarball
+  sudo: true
+  command: "tar -xvf {{nrpe_build_directory}}/nrpe-{{nagios_nrpe_version}}.tar.gz -C {{nrpe_build_directory}}"
+
+- name: libssl-dev depackage
+  sudo: true
+  command: dpkg -L libssl-dev
+
+- name: link libssl.so
+  sudo: true
+  file: src=/usr/lib/x86_64-linux-gnu/libssl.so dest=/usr/lib/libssl.so state=link
+
+- name: configure
+  sudo: true
+  command: "./configure --with-ssl=/usr/bin/openssl --with-ssl-lib=/usr/lib/x86_64-linux-gnu chdir={{nrpe_build_directory}}/nrpe-{{nagios_nrpe_version}}"
+
+- name: make all
+  sudo: true
+  command: "make all chdir={{nrpe_build_directory}}/nrpe-{{nagios_nrpe_version}}"
+
+- name: make install
+  sudo: true
+  command: "make install chdir={{nrpe_build_directory}}/nrpe-{{nagios_nrpe_version}} "
+
+- name: make install daemon
+  sudo: true
+  command: "make install-daemon chdir={{nrpe_build_directory}}/nrpe-{{nagios_nrpe_version}} "
+
+- name: make install daemon config
+  sudo: true
+  command: "make install-daemon-config chdir={{nrpe_build_directory}}/nrpe-{{nagios_nrpe_version}} "
+
+- name: make install-xinetd
+  sudo: true
+  command: "make install-xinetd chdir={{nrpe_build_directory}}/nrpe-{{nagios_nrpe_version}} "
+
+# - name: command
+#   sudo: true
+#   command: /usr/local/nagios/bin/nrpe -c /usr/local/nagios/etc/nrpe.cfg -d
+
+- name: Xinetd nrpe configuration
+  sudo: true
+  lineinfile: dest=/etc/xinetd.d/nrpe regexp='^only_from       = 127\.0\.0\.1' insertafter='only_from       = 127.0.0.1'  line=' {{nagios_host_ip}}' state=present
+
+- name:   add iptable
+  sudo: true
+  command: "iptables -A INPUT -s {{nagios_host}} -p tcp --dport 5666 -j ACCEPT"
+
+- name: create server.cfg
+  sudo: true
+  template: src=../templates/server.cfg.j2 dest=/usr/local/nagios/etc/objects/server.cfg
+
+- name: create commands2.cfg
+  sudo: true
+  template: src=../templates/commands2.cfg.j2 dest=/usr/local/nagios/etc/objects/commands2.cfg
+
+- name: Include commands2.cfg in nagios.cfg
+  sudo: true
+  lineinfile: >
+    dest=/usr/local/nagios/etc/nagios.cfg
+    line='cfg_file=/usr/local/nagios/etc/objects/commands2.cfg'
+
+- name: Include server.cfg in nagios.cfg
+  sudo: true
+  lineinfile: >
+    dest=/usr/local/nagios/etc/nagios.cfg 
+    line='cfg_file=/usr/local/nagios/etc/objects/server.cfg'
+
+- name: Remove old contacts.cfg_file
+  sudo: true
+  file: path=/usr/local/nagios/etc/objects/contacts.cfg state=absent
+
+- name: Add new contacts.cfg file
+  sudo: true
+  template: src=../templates/contacts.cfg.j2 dest=/usr/local/nagios/etc/objects/contacts.cfg
+
+- name: chmod  nagios:nagios /usr/local/nagios
+  sudo: true
+  file: path=/usr/local/nagios owner=nagios group=nagios
+
+- name: chown nagios:nagios /usr/local/nagios/libexec
+  sudo: true
+  file: path=/usr/local/nagios/libexec owner=nagios group=nagios recurse=true

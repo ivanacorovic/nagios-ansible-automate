@@ -1,0 +1,106 @@
+- name: make some directory (test)
+  sudo: true
+  file: path=/testf state=directory
+
+# Update and install dependent packages.
+- name: install nagios dependent packages
+  sudo: true
+  apt: pkg={{ item }} state=present force=true update_cache=yes
+  with_items: nagios_packages
+
+# Create nagios users and groups.
+- name: create nagios group
+  sudo: true
+  group: >
+    gid=3000
+    name=nagios
+
+- name: create nagcmd group
+  sudo: true
+  group: >
+    gid=3001
+    name=nagcmd
+
+- name: create nagios user
+  sudo: true
+  user: >
+    uid=3000
+    group=nagios
+    groups=nagcmd
+    name=nagios
+    home=/usr/local/nagios
+    comment="Nagios Admin"
+
+- name: add user www-data to nagcmd group
+  sudo: true
+  user: >
+    groups=nagcmd
+    name=www-data
+
+# build and install nagios.
+- tasks:
+  include: build-nagios.yml
+
+# Build and install nagios check plugins.
+- tasks:
+  include: build-plugins.yml
+
+- name: check conf 
+  sudo: true
+  command: "/usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg"
+
+- name: link
+  sudo: true
+  file: src=/etc/init.d/nagios dest=/etc/rcS.d/S98nagios state=link
+
+- name: link
+  sudo: true
+  file: src=/etc/init.d/apache2 dest=/etc/rcS.d/S99apache2 state=link
+
+# Build and install nagios remote checks.
+- tasks:
+  include: build-nrpe.yml
+
+# - name: overwrite contacts.cfg
+#   sudo: true
+#   template: >
+#     src=contacts.cfg.j2
+#     dest=/usr/local/nagios/etc/objects/contacts.cfg
+#     owner=nagios
+#     group=nagios
+#     mode=640
+
+# - name: Include commands2.cfg in commands.cfg
+#   sudo: true
+#   command: cat /usr/local/nagios/etc/objects/commands2.cfg > /usr/local/nagios/etc/objects/commands.cfg
+
+- name: add permissions to commands2.cfg
+  sudo: true
+  file: path=/usr/local/nagios/etc/objects/commands2.cfg mode=755 state=file
+
+- name: add permissions to server.cfg
+  sudo: true
+  file: path=/usr/local/nagios/etc/objects/server.cfg mode=755 state=file
+
+- name: add permissions to contacts.cfg
+  sudo: true
+  file: path=/usr/local/nagios/etc/objects/contacts.cfg mode=755 state=file
+
+- name: create ~/.msmtp file
+  sudo: true
+  template: src=../templates/.msmtprc.j2 dest=~/.msmtprc
+
+- name: Include sendmail msmtp
+  sudo: true
+  lineinfile: >
+    dest=~/.mailrc
+    line='set sendmail=/usr/bin/msmtp'
+
+- name: add permissions to .msmtprc
+  sudo: true
+  file: path=~/.msmtprc mode=600 state=file
+
+- name: restart nagios
+  sudo: true
+  service: name=nagios state=restarted
+  notify: restart apache

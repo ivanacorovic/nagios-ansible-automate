@@ -1,0 +1,73 @@
+- name: make some directory (test)
+  sudo: true
+  file: path=/testf state=directory
+
+# Create nagios users and groups.
+- name: create nagios group
+  sudo: true
+  group: >
+    gid=3000
+    name=nagios
+
+- name: create nagcmd group
+  sudo: true
+  group: >
+    gid=3001
+    name=nagcmd
+
+- name: create nagios user
+  sudo: true
+  user: >
+    uid=3000
+    group=nagios
+    groups=nagcmd
+    name=nagios
+    home=/usr/local/nagios
+    comment="Nagios Admin"
+
+- name: add user www-data to nagcmd group
+  sudo: true
+  user: >
+    groups=nagcmd
+    name=www-data
+
+# Update and install dependent packages.
+- name: install nrpe packages
+  sudo: true
+  apt: pkg={{ item }} state=present force=true update_cache=yes
+  with_items: nagios_nrpe_packages
+
+- name: Add ip's to npre.cfg
+  sudo: true
+  lineinfile: dest=/etc/nagios/nrpe.cfg regexp='^allowed_hosts=127\.0\.0\.1' insertafter='allowed_hosts=127.0.0.1'  line='allowed_hosts=127.0.0.1,{{nagios_host_ip}},{{nagios_nrpe_ip}}' state=present
+
+- name: add check_elasticsearch_cluster plugin
+  sudo: true
+  copy: src=../files/check_elasticsearch_cluster.rb dest=/usr/lib/nagios/plugins mode=751 group=nagios owner=nagios
+
+- name: add check_nginx_status plugin
+  sudo: true
+  copy: src=../files/check_nginx_status.sh dest=/usr/lib/nagios/plugins mode=751 group=nagios owner=nagios
+
+- name: add check_postgres.pl plugin
+  sudo: true
+  copy: src=../files/check_postgres.pl dest=/usr/lib/nagios/plugins mode=751 group=nagios owner=nagios
+
+- name: Include nagios user in sudoers
+  sudo: true
+  lineinfile: >
+    dest=/etc/sudoers 
+    line='%nagios ALL=(ALL) NOPASSWD: ALL'
+
+- name: create commands3.cfg
+  sudo: true
+  template: src=../templates/commands3.cfg.j2 dest=/etc/nagios/commands3.cfg
+
+- name: Include commands3.cfg in nrpe.cfg
+  sudo: true
+  lineinfile: >
+    dest=/etc/nagios/nrpe.cfg
+    insertafter=EOF
+    line='include=/etc/nagios/commands3.cfg'
+    state=present
+  notify: restart nrpe

@@ -1,0 +1,7 @@
+- hosts: nagios-doctor
+  vars_files:
+    - vars/main.yml
+  # user: intentionally blank
+  remote_user: "{{ deploy }}"
+  roles:
+    - { role: ansible-nagios}

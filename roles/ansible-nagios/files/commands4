@@ -1,0 +1,54 @@
+define command{
+command_name check_remote_users
+command_line $USER1$/check_nrpe -H $HOSTADDRESS$ -c check_users
+}
+
+define command{
+        command_name check_postgresql
+        command_line $USER1$/check_nrpe -H $HOSTADDRESS$ -c check_pgsql
+}
+
+define command{
+command_name check_elasticsearch_cluster_health
+command_line $USER1$/check_nrpe -H $HOSTADDRESS$ -c check_elasticsearch_cluster
+}
+
+define command{
+command_name check_unicorn
+command_line $USER1$/check_nrpe -H $HOSTADDRESS$ -c check_unicorn
+}
+
+define command{
+command_name check_unicorn_processes
+command_line $USER1$/check_nrpe -H $HOSTADDRESS$ -c check_unicorn_processes
+}
+
+define command{
+  command_name check_nginx_status
+  command_line $USER1$/check_nrpe -H $HOSTADDRESS$ -c check_nginx_status
+ }
+
+ define command{
+        command_name check_ssh_nrpe
+        command_line $USER1$/check_nrpe -H $HOSTADDRESS$ -c check_ssh_nrpe
+}
+
+define command{
+        command_name check_http_nrpe
+        command_line $USER1$/check_nrpe -H $HOSTADDRESS$ -c check_http_nrpe
+}
+
+define command{
+        command_name check_ping_nrpe
+        command_line $USER1$/check_nrpe -H $HOSTADDRESS$ -c check_ping_nrpe
+}
+
+define command{
+        command_name check_procs_nrpe
+        command_line $USER1$/check_nrpe -H $HOSTADDRESS$ -c check_procs_nrpe
+}
+
+define command{
+        command_name check_load_nrpe
+        command_line $USER1$/check_nrpe -H $HOSTADDRESS$ -c check_load_nrpe
+}

@@ -1,0 +1,50 @@
+nagios_packages:
+  - apache2
+  - libapache2-mod-php5
+  - build-essential
+  - libgd2-xpm
+  - libgd2-xpm-dev
+  - libssl-dev
+  - xinetd
+  - sendmail
+  - heirloom-mailx
+  - wget
+  - php5-gd
+  - daemon
+  - msmtp
+
+nagios_nrpe_packages:
+  - nagios-nrpe-server
+  - nagios-nrpe-plugin
+  - openjdk-7-jre-headless
+
+nagios_version: 4.0.2
+nagios_plugins_version: 1.5
+nagios_nrpe_version: 2.15
+nagios_build_directory: /tmp
+nrpe_build_directory: /usr/local/src/nrpe
+nagios_ssl_lib_path: /usr/lib/x86_64-linux-gnu
+nagios_password: nagiosadmin
+nagios_user: nagiosadmin
+nagios_user2: nagiosadmin2
+nagios_user3: nagiosadmin3
+nagios_admin_email: ivana.corovic@ideus.me
+nagios_admin_email2: redzep.demic@ideus.me
+nagios_admin_email3: daniel.resetar@ideus.me
+nagios_admin_name: 'Nagios Admin'
+nagios_admin_name2: 'Nagios Admin2'
+nagios_admin_name3: 'Nagios Admin3'
+nagios_host: nagios-doctor
+nagios_host_ip: 107.170.106.199
+nagios_nrpe_ip: 107.170.129.162
+deploy: deployer
+password: $6$GqS1kM5vniwP9O$nVbjk0P6tZe8nJtNxI6Adjis1DWvSFsLgQcRsTeZ6vsScAX.sxaVgCPRAi0.HnhSF3i7k06xPyvMG1/0RbS3d0
+
+
+nagios_tarball: http://prdownloads.sourceforge.net/sourceforge/nagios/nagios-4.0.2.tar.gz
+
+nagios_plugin_tarball: http://www.nagios-plugins.org/download/nagios-plugins-1.5.tar.gz
+
+nagios_nrpe_tarball: http://kent.dl.sourceforge.net/project/nagios/nrpe-2.x/nrpe-2.15/nrpe-2.15.tar.gz
+
+

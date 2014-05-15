@@ -1,0 +1,14 @@
+command[check_pgsql]=/usr/lib/nagios/plugins/check_pgsql -H localhost -d expman_production -l expman -p dKly:YNsBMwhEkxJmHnS
+command[check_elasticsearch_cluster]=/usr/lib/nagios/plugins/check_elasticsearch_cluster.rb --ip localhost --port 9200
+command[check_nginx_status]=sudo /usr/lib/nagios/plugins/check_nginx_status.sh localhost 80 nginx_status
+command[check_disk]=/usr/lib/nagios/plugins/check_disk -w 10% -c 5% -p /
+command[check_load_nrpe]=/usr/lib/nagios/plugins/check_load -w 5.0,4.0,3.0 -c 10.0,6.0,4.0
+command[check_procs_nrpe]=/usr/lib/nagios/plugins/check_procs -w 10 -c 20 --metric CPU
+command[check_http_nrpe]=/usr/lib/nagios/plugins/check_http -H localhost
+command[check_ssh_nrpe]=/usr/lib/nagios/plugins/check_ssh localhost
+command[check_ping_nrpe]=/usr/lib/nagios/plugins/check_ping -H localhost -w 100.0,20% -c 500.0,60%
+command[check_pg_connection]=/usr/lib/nagios/plugins/check_postgres.pl --action=connection --dbuser=expman --db=expman_production --dbpass=dKly:YNsBMwhEkxJmHnS --host=localhost
+command[check_bloat]=/usr/lib/nagios/plugins/check_postgres.pl --action=bloat --dbuser=expman --db=expman_production --dbpass=dKly:YNsBMwhEkxJmHnS --host=localhost --warning='100 M' --critical='200 M'
+command[check_backends]=/usr/lib/nagios/plugins/check_postgres.pl --action=backends --dbuser=expman --db=expman_production --dbpass=dKly:YNsBMwhEkxJmHnS --host=localhost --warning='150' --critical='150'
+command[check_db_size]=/usr/lib/nagios/plugins/check_postgres.pl --action=database_size --dbuser=expman --db=expman_production --dbpass=dKly:YNsBMwhEkxJmHnS --host=localhost --warning='450 GB' --critical='500 GB'
+command[check_query_time]=/usr/lib/nagios/plugins/check_postgres.pl --action=query_time --dbuser=expman --db=expman_production --dbpass=dKly:YNsBMwhEkxJmHnS --host=localhost --warning=20s --critical=40s --port=5432

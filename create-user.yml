@@ -1,0 +1,7 @@
+- hosts: all
+  user: root
+  vars_files:
+    - vars/main.yml
+  # user: intentionally blank
+  roles:
+    - { role: create-deploy-user }

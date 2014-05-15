@@ -1,0 +1,115 @@
+- name: download nagios tarball
+  sudo: true
+  get_url: >
+    dest={{nagios_build_directory}}
+    url={{nagios_tarball}}
+
+- name: untar the tarball
+  sudo: true
+  command: "tar -xvf /tmp/nagios-{{nagios_version}}.tar.gz -C /tmp/"
+
+- name: configure
+  sudo: true
+  command: "./configure --prefix=/usr/local/nagios --with-nagios-user=nagios --with-nagios-group=nagios --with-command-user=nagios --with-command-group=nagcmd --with-mail=/usr/bin/sendmail chdir={{nagios_build_directory}}/nagios-{{nagios_version}}"
+
+- name: make
+  sudo: true
+  command: "make all chdir={{nagios_build_directory}}/nagios-{{nagios_version}}"
+
+- name: make
+  sudo: true
+  command: "make install chdir={{nagios_build_directory}}/nagios-{{nagios_version}}"
+
+- name: make
+  sudo: true
+  command: "make install-init chdir={{nagios_build_directory}}/nagios-{{nagios_version}}"
+
+- name: make
+  sudo: true
+  command: "make install-config chdir={{nagios_build_directory}}/nagios-{{nagios_version}}"
+
+- name: make
+  sudo: true
+  command: "make install-commandmode chdir={{nagios_build_directory}}/nagios-{{nagios_version}}"
+
+- name: make
+  sudo: true
+  command: "make install-webconf chdir={{nagios_build_directory}}/nagios-{{nagios_version}}"
+
+- name: copy eventhandlers
+  sudo: true
+  command: "cp -R contrib/eventhandlers/ /usr/local/nagios/libexec/ chdir={{nagios_build_directory}}/nagios-{{nagios_version}}"
+
+- name: change owner for eventhandlers
+  sudo: true
+  file: path=/usr/local/nagios/libexec/eventhandlers owner=nagios group=nagios recurse=true mode=0644
+
+- name: add a htpasswd user for nagios
+  sudo: true
+  command: >
+    htpasswd -b -c /usr/local/nagios/etc/htpasswd.users {{ nagios_user }} {{ nagios_password }}
+- name: htpasswd file permission
+  sudo: true
+  file: >
+    path=/usr/local/nagios/etc/htpasswd.users
+    owner=nagios
+    group=nagios
+    mode=0644
+
+- name: fix script part 1
+  sudo: true
+  command: >
+   sed -i "s/^\.\ \/etc\/rc.d\/init.d\/functions$/\.\ \/lib\/lsb\/init-functions/g" /etc/init.d/nagios
+
+- name: fix script part 2
+  sudo: true
+  command: >
+    sed -i "s/status\ /status_of_proc\ /g" /etc/init.d/nagios
+
+- name: fix script part 3
+  sudo: true
+  command: >
+   sed -i "s/daemon\ --user=\$user\ \$exec\ -ud\ \$config/daemon\ --user=\$user\ --\ \$exec\ -d\ \$config/g" /etc/init.d/nagios
+
+- name: fix script part 4
+  sudo: true
+  command: >
+    sed -i "s/\/var\/lock\/subsys\/\$prog/\/var\/lock\/\$prog/g" /etc/init.d/nagios
+
+- name: fix script part 5
+  sudo: true
+  command: >
+    sed -i "s/\/sbin\/service\ nagios\ configtest/\/usr\/sbin\/service\ nagios\ configtest/g" /etc/init.d/nagios
+
+- name: fix script part 6
+  sudo: true
+  command: >
+    sed -i "s/\"\ \=\=\ \"/\"\ \=\ \"/g" /etc/init.d/nagios
+
+- name: fix script part 7
+  sudo: true
+  command: >
+    sed -i "s/\#\#killproc\ \-p\ \${pidfile\}\ \-d\ 10/killproc\ \-p \${pidfile\}/g" /etc/init.d/nagios
+
+- name: fix script part 8
+  sudo: true
+  command: >
+    sed -i "s/runuser/su/g" /etc/init.d/nagios
+
+- name: fix script part 9
+  sudo: true
+  command: >
+    sed -i "s/use_precached_objects=\"false\"/&\ndaemonpid=\$(pidof daemon)/" /etc/init.d/nagios
+
+- name: fix script part 10
+  sudo: true
+  command: >
+    sed -i "s/killproc\ -p\ \${pidfile}\ -d\ 10\ \$exec/\/sbin\/start-stop-daemon\ --user=\$user\ \$exec\ --stop/g" /etc/init.d/nagios
+
+- name: fix script part 11
+  sudo: true
+  command: >
+    sed -i "s/\/sbin\/start-stop-daemon\ --user=\$user\ \$exec\ --stop/&\n\tkill -9 \$daemonpid/" /etc/init.d/nagios
+
+
+  
